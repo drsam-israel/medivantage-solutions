@@ -1,0 +1,22 @@
+{
+  "authorization_number": "PA-KSA-2026-0004",
+  "member_id": "53195f30-4162-4fa6-a2be-48f988eb4ab4",
+  "provider_id": "859940c4-cf87-4352-b4e0-1ab36da67a27",
+  "enrollment_id": "12026255-3608-4afa-9505-be29bce2ad9e",
+  "diagnosis_code": "M17.11",
+  "diagnosis_description": "Unilateral primary osteoarthritis, right knee",
+  "procedure_code": "27447",
+  "procedure_description": "Total knee arthroplasty",
+  "requested_service_date": "2026-08-20",
+  "priority": "ROUTINE",
+  "clinical_summary": "Member has persistent right knee pain and functional limitation despite conservative therapy.",
+  "coverage_status": "ACTIVE",
+  "benefit_category": "INPATIENT_SURGERY",
+  "service_covered": "YES",
+  "authorization_required": "YES",
+  "ai_recommendation": "APPROVE",
+  "ai_confidence": 91.0,
+  "medical_necessity_score": 88.0,
+  "ai_rationale": "Clinical findings and treatment history support medical necessity subject to human review.",
+  "assigned_reviewer": "Dr. Clinical Reviewer"
+}

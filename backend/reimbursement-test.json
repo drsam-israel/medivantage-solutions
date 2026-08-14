@@ -1,0 +1,17 @@
+{
+  "reimbursement_number": "REIM-KSA-2026-0001",
+  "claim_id": "ebb31277-13da-41ca-b687-11a0bdfea674",
+  "provider_id": "859940c4-cf87-4352-b4e0-1ab36da67a27",
+  "member_id": "53195f30-4162-4fa6-a2be-48f988eb4ab4",
+  "reimbursement_type": "PROVIDER",
+  "currency": "SAR",
+  "billed_amount": 1000.00,
+  "approved_amount": 800.00,
+  "withholding_amount": 20.00,
+  "recovery_amount": 0.00,
+  "net_payable_amount": 780.00,
+  "scheduled_payment_date": "2026-08-15",
+  "ai_risk_score": 18.0,
+  "ai_risk_level": "LOW",
+  "ai_risk_reason": "Payment is consistent with the adjudicated allowed amount and no material financial anomalies were identified."
+}

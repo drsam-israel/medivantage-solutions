@@ -1,0 +1,2225 @@
+import { useMemo } from "react";
+import {
+  useNavigate,
+  useParams,
+} from "react-router-dom";
+
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  Divider,
+  LinearProgress,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+} from "@mui/material";
+
+import type { ReactNode } from "react";
+
+import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
+import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
+import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
+import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
+import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
+import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
+import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
+import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
+import ManageSearchOutlinedIcon from "@mui/icons-material/ManageSearchOutlined";
+import ModelTrainingOutlinedIcon from "@mui/icons-material/ModelTrainingOutlined";
+import PsychologyOutlinedIcon from "@mui/icons-material/PsychologyOutlined";
+import QueryStatsOutlinedIcon from "@mui/icons-material/QueryStatsOutlined";
+import RecommendOutlinedIcon from "@mui/icons-material/RecommendOutlined";
+import ScheduleOutlinedIcon from "@mui/icons-material/ScheduleOutlined";
+import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
+import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
+import TrendingUpOutlinedIcon from "@mui/icons-material/TrendingUpOutlined";
+import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
+import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
+
+import {
+  getAIInsightById,
+} from "../data/aiInsightsDemoData";
+
+import type {
+  AIInsightSeverity,
+  AIInsightStatus,
+  AIReviewStatus,
+  AuditStatus,
+  BiasStatus,
+  DriftStatus,
+  GovernanceStatus,
+} from "../data/aiInsightsDemoData";
+
+interface SummaryCardProps {
+  title: string;
+  value: string | number;
+  subtitle: string;
+  icon: ReactNode;
+  tone?:
+    | "default"
+    | "success"
+    | "warning"
+    | "critical"
+    | "info";
+}
+
+interface DetailItemProps {
+  label: string;
+  value: ReactNode;
+}
+
+interface SectionHeaderProps {
+  icon: ReactNode;
+  title: string;
+  subtitle?: string;
+}
+
+const money = new Intl.NumberFormat("en-SA", {
+  style: "currency",
+  currency: "SAR",
+  maximumFractionDigits: 0,
+});
+
+function formatCurrency(value: number): string {
+  return money.format(value);
+}
+
+function formatDate(value: string): string {
+  if (!value) {
+    return "Not available";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+}
+
+function getSeverityColour(
+  severity: AIInsightSeverity,
+):
+  | "default"
+  | "info"
+  | "warning"
+  | "error"
+  | "success" {
+  switch (severity) {
+    case "Low":
+      return "success";
+    case "Medium":
+      return "warning";
+    case "High":
+    case "Critical":
+      return "error";
+    default:
+      return "default";
+  }
+}
+
+function getStatusColour(
+  status: AIInsightStatus,
+):
+  | "default"
+  | "info"
+  | "warning"
+  | "error"
+  | "success" {
+  switch (status) {
+    case "New":
+      return "info";
+    case "Under Review":
+      return "warning";
+    case "Action Required":
+      return "error";
+    case "In Progress":
+      return "warning";
+    case "Resolved":
+      return "success";
+    case "Dismissed":
+      return "default";
+    default:
+      return "default";
+  }
+}
+
+function getReviewColour(
+  status: AIReviewStatus,
+):
+  | "default"
+  | "info"
+  | "warning"
+  | "error"
+  | "success" {
+  switch (status) {
+    case "Approved":
+      return "success";
+    case "Pending":
+      return "warning";
+    case "Escalated":
+      return "error";
+    case "Rejected":
+      return "error";
+    default:
+      return "default";
+  }
+}
+
+function getGovernanceColour(
+  status: GovernanceStatus,
+):
+  | "default"
+  | "info"
+  | "warning"
+  | "error"
+  | "success" {
+  switch (status) {
+    case "Compliant":
+      return "success";
+    case "Attention Required":
+    case "Under Review":
+      return "warning";
+    case "Restricted":
+      return "error";
+    default:
+      return "default";
+  }
+}
+
+function getDriftColour(
+  status: DriftStatus,
+):
+  | "default"
+  | "info"
+  | "warning"
+  | "error"
+  | "success" {
+  switch (status) {
+    case "Normal":
+      return "success";
+    case "Watch":
+      return "warning";
+    case "Degraded":
+    case "Critical":
+      return "error";
+    default:
+      return "default";
+  }
+}
+
+function getBiasColour(
+  status: BiasStatus,
+):
+  | "default"
+  | "info"
+  | "warning"
+  | "error"
+  | "success" {
+  switch (status) {
+    case "Passed":
+      return "success";
+    case "Watch":
+    case "Not Assessed":
+      return "warning";
+    case "Failed":
+      return "error";
+    default:
+      return "default";
+  }
+}
+
+function getAuditColour(
+  status: AuditStatus,
+):
+  | "default"
+  | "info"
+  | "warning"
+  | "error"
+  | "success" {
+  switch (status) {
+    case "Complete":
+      return "success";
+    case "Pending":
+      return "warning";
+    case "Exception":
+      return "error";
+    case "Not Required":
+      return "default";
+    default:
+      return "default";
+  }
+}
+
+function getTimelineColour(
+  status:
+    | "Completed"
+    | "Pending"
+    | "Warning"
+    | "Escalated",
+):
+  | "default"
+  | "info"
+  | "warning"
+  | "error"
+  | "success" {
+  switch (status) {
+    case "Completed":
+      return "success";
+    case "Pending":
+    case "Warning":
+      return "warning";
+    case "Escalated":
+      return "error";
+    default:
+      return "default";
+  }
+}
+
+function SummaryCard({
+  title,
+  value,
+  subtitle,
+  icon,
+  tone = "default",
+}: SummaryCardProps) {
+  const palette = {
+    default: {
+      backgroundColor:
+        "rgba(21, 101, 192, 0.08)",
+      iconColor: "primary.main",
+    },
+    success: {
+      backgroundColor:
+        "rgba(46, 125, 50, 0.10)",
+      iconColor: "success.main",
+    },
+    warning: {
+      backgroundColor:
+        "rgba(237, 108, 2, 0.10)",
+      iconColor: "warning.main",
+    },
+    critical: {
+      backgroundColor:
+        "rgba(211, 47, 47, 0.10)",
+      iconColor: "error.main",
+    },
+    info: {
+      backgroundColor:
+        "rgba(2, 136, 209, 0.10)",
+      iconColor: "info.main",
+    },
+  }[tone];
+
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        flex: "1 1 210px",
+        minWidth: 210,
+        p: 2.3,
+        borderRadius: 3,
+        border: "1px solid",
+        borderColor: "divider",
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: 2,
+        }}
+      >
+        <Box sx={{ minWidth: 0 }}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: "text.secondary",
+              fontWeight: 700,
+            }}
+          >
+            {title}
+          </Typography>
+
+          <Typography
+            variant="h5"
+            sx={{
+              mt: 0.7,
+              fontWeight: 900,
+              overflowWrap: "anywhere",
+            }}
+          >
+            {value}
+          </Typography>
+
+          <Typography
+            variant="caption"
+            sx={{
+              display: "block",
+              mt: 0.5,
+              color: "text.secondary",
+              lineHeight: 1.45,
+            }}
+          >
+            {subtitle}
+          </Typography>
+        </Box>
+
+        <Box
+          sx={{
+            width: 46,
+            height: 46,
+            flexShrink: 0,
+            display: "grid",
+            placeItems: "center",
+            borderRadius: 2.4,
+            backgroundColor:
+              palette.backgroundColor,
+            color: palette.iconColor,
+          }}
+        >
+          {icon}
+        </Box>
+      </Box>
+    </Paper>
+  );
+}
+
+function DetailItem({
+  label,
+  value,
+}: DetailItemProps) {
+  return (
+    <Box sx={{ minWidth: 0 }}>
+      <Typography
+        variant="caption"
+        sx={{
+          color: "text.secondary",
+          fontWeight: 700,
+          letterSpacing: 0.5,
+          textTransform: "uppercase",
+        }}
+      >
+        {label}
+      </Typography>
+
+      <Typography
+        variant="body2"
+        sx={{
+          mt: 0.45,
+          fontWeight: 700,
+          overflowWrap: "anywhere",
+        }}
+      >
+        {value}
+      </Typography>
+    </Box>
+  );
+}
+
+function SectionHeader({
+  icon,
+  title,
+  subtitle,
+}: SectionHeaderProps) {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 1.5,
+        mb: 2.5,
+      }}
+    >
+      <Box
+        sx={{
+          width: 42,
+          height: 42,
+          flexShrink: 0,
+          display: "grid",
+          placeItems: "center",
+          borderRadius: 2,
+          color: "primary.main",
+          backgroundColor:
+            "rgba(21, 101, 192, 0.10)",
+        }}
+      >
+        {icon}
+      </Box>
+
+      <Box>
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: 900 }}
+        >
+          {title}
+        </Typography>
+
+        {subtitle && (
+          <Typography
+            variant="body2"
+            sx={{
+              mt: 0.25,
+              color: "text.secondary",
+            }}
+          >
+            {subtitle}
+          </Typography>
+        )}
+      </Box>
+    </Box>
+  );
+}
+
+export default function AIInsightDetails() {
+  const navigate = useNavigate();
+
+  const { insightId } = useParams<{
+    insightId: string;
+  }>();
+
+  const insight = useMemo(() => {
+    if (!insightId) {
+      return undefined;
+    }
+
+    return getAIInsightById(
+      decodeURIComponent(insightId),
+    );
+  }, [insightId]);
+
+  if (!insight) {
+    return (
+      <Box sx={{ py: 6 }}>
+        <Alert
+          severity="error"
+          sx={{
+            maxWidth: 760,
+            mx: "auto",
+            borderRadius: 3,
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 900 }}
+          >
+            AI insight not found
+          </Typography>
+
+          <Typography
+            variant="body2"
+            sx={{ mt: 0.5 }}
+          >
+            The requested AI insight could not be
+            found in the MediVantage intelligence
+            registry.
+          </Typography>
+
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackOutlinedIcon />}
+            onClick={() =>
+              navigate("/ai-insights")
+            }
+            sx={{
+              mt: 2,
+              borderRadius: 2,
+              fontWeight: 800,
+            }}
+          >
+            Return to AI Insights
+          </Button>
+        </Alert>
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ width: "100%", pb: 4 }}>
+      <Button
+        startIcon={<ArrowBackOutlinedIcon />}
+        onClick={() =>
+          navigate("/ai-insights")
+        }
+        sx={{
+          mb: 2,
+          fontWeight: 800,
+        }}
+      >
+        Back to AI Insights
+      </Button>
+
+      <Paper
+        elevation={0}
+        sx={{
+          position: "relative",
+          overflow: "hidden",
+          p: {
+            xs: 2.5,
+            md: 4,
+          },
+          borderRadius: 4,
+          color: "common.white",
+          background:
+            "linear-gradient(135deg, #1B2559 0%, #3448A8 54%, #147C8C 100%)",
+        }}
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            width: 270,
+            height: 270,
+            borderRadius: "50%",
+            backgroundColor:
+              "rgba(255,255,255,0.07)",
+            top: -120,
+            right: -70,
+          }}
+        />
+
+        <Box
+          sx={{
+            position: "relative",
+            zIndex: 1,
+            display: "flex",
+            flexDirection: {
+              xs: "column",
+              md: "row",
+            },
+            justifyContent: "space-between",
+            alignItems: {
+              xs: "flex-start",
+              md: "center",
+            },
+            gap: 3,
+          }}
+        >
+          <Box sx={{ maxWidth: 820 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              <PsychologyOutlinedIcon />
+
+              <Typography
+                variant="overline"
+                sx={{
+                  fontWeight: 900,
+                  letterSpacing: 1.2,
+                }}
+              >
+                AI INSIGHT 360
+              </Typography>
+            </Box>
+
+            <Typography
+              variant="h3"
+              sx={{
+                mt: 0.7,
+                fontWeight: 900,
+                fontSize: {
+                  xs: "2rem",
+                  md: "2.55rem",
+                },
+              }}
+            >
+              {insight.insightId}
+            </Typography>
+
+            <Typography
+              variant="h6"
+              sx={{
+                mt: 0.8,
+                fontWeight: 800,
+                opacity: 0.95,
+              }}
+            >
+              {insight.title}
+            </Typography>
+
+            <Typography
+              variant="body1"
+              sx={{
+                mt: 1,
+                opacity: 0.88,
+                lineHeight: 1.7,
+              }}
+            >
+              {insight.domain} ·{" "}
+              {insight.primaryEntityName} ·{" "}
+              {insight.model.modelName}
+            </Typography>
+
+            <Box
+              sx={{
+                mt: 2,
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 1,
+              }}
+            >
+              <Chip
+                label={insight.severity}
+                color={getSeverityColour(
+                  insight.severity,
+                )}
+                sx={{ fontWeight: 800 }}
+              />
+
+              <Chip
+                label={insight.status}
+                color={getStatusColour(
+                  insight.status,
+                )}
+                sx={{ fontWeight: 800 }}
+              />
+
+              <Chip
+                label={`${insight.confidenceScore}% Confidence`}
+                sx={{
+                  color: "common.white",
+                  backgroundColor:
+                    "rgba(255,255,255,0.14)",
+                  fontWeight: 800,
+                }}
+              />
+
+              <Chip
+                label={
+                  insight.governance
+                    .governanceStatus
+                }
+                color={getGovernanceColour(
+                  insight.governance
+                    .governanceStatus,
+                )}
+                sx={{ fontWeight: 800 }}
+              />
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              width: {
+                xs: "100%",
+                md: 290,
+              },
+              p: 2.5,
+              borderRadius: 3,
+              backgroundColor:
+                "rgba(255,255,255,0.12)",
+            }}
+          >
+            <Typography
+              variant="body2"
+              sx={{ opacity: 0.85 }}
+            >
+              AI Risk Score
+            </Typography>
+
+            <Typography
+              variant="h2"
+              sx={{
+                mt: 0.4,
+                fontWeight: 900,
+              }}
+            >
+              {insight.riskScore}/100
+            </Typography>
+
+            <LinearProgress
+              variant="determinate"
+              value={insight.riskScore}
+              sx={{
+                mt: 1.5,
+                height: 8,
+                borderRadius: 99,
+                backgroundColor:
+                  "rgba(255,255,255,0.18)",
+                "& .MuiLinearProgress-bar": {
+                  backgroundColor:
+                    "common.white",
+                  borderRadius: 99,
+                },
+              }}
+            />
+
+            <Typography
+              variant="caption"
+              sx={{
+                display: "block",
+                mt: 1,
+                opacity: 0.85,
+              }}
+            >
+              Generated{" "}
+              {formatDate(insight.generatedDate)}
+            </Typography>
+          </Box>
+        </Box>
+      </Paper>
+
+      <Box
+        sx={{
+          mt: 3,
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 2,
+        }}
+      >
+        <SummaryCard
+          title="Financial Impact"
+          value={formatCurrency(
+            insight.financialImpact,
+          )}
+          subtitle="Estimated business impact"
+          icon={
+            <AccountBalanceWalletOutlinedIcon />
+          }
+          tone="critical"
+        />
+
+        <SummaryCard
+          title="Savings Opportunity"
+          value={formatCurrency(
+            insight.estimatedSavings,
+          )}
+          subtitle="Potential avoidable cost"
+          icon={<TrendingUpOutlinedIcon />}
+          tone="success"
+        />
+
+        <SummaryCard
+          title="Estimated Exposure"
+          value={formatCurrency(
+            insight.estimatedExposure,
+          )}
+          subtitle="Potential financial risk"
+          icon={<WarningAmberOutlinedIcon />}
+          tone="warning"
+        />
+
+        <SummaryCard
+          title="Confidence"
+          value={`${insight.confidenceScore}%`}
+          subtitle="Model confidence score"
+          icon={<InsightsOutlinedIcon />}
+          tone="info"
+        />
+
+        <SummaryCard
+          title="Probability"
+          value={`${insight.probabilityScore}%`}
+          subtitle="Predicted event probability"
+          icon={<QueryStatsOutlinedIcon />}
+          tone="info"
+        />
+
+        <SummaryCard
+          title="Affected Entities"
+          value={insight.affectedEntities.length}
+          subtitle="Linked entities requiring review"
+          icon={<GroupsOutlinedIcon />}
+        />
+      </Box>
+
+      <Box
+        sx={{
+          mt: 3,
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            xl: "minmax(0, 2fr) minmax(340px, 1fr)",
+          },
+          gap: 3,
+          alignItems: "start",
+        }}
+      >
+        <Box
+          sx={{
+            display: "grid",
+            gap: 3,
+            minWidth: 0,
+          }}
+        >
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 3,
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <SectionHeader
+              icon={<AutoAwesomeOutlinedIcon />}
+              title="Executive Insight Summary"
+              subtitle="AI-generated prediction, anomaly and business context."
+            />
+
+            <Typography
+              variant="body1"
+              sx={{
+                fontWeight: 700,
+                lineHeight: 1.75,
+              }}
+            >
+              {insight.summary}
+            </Typography>
+
+            <Divider sx={{ my: 2.5 }} />
+
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  md: "repeat(2, minmax(0, 1fr))",
+                },
+                gap: 3,
+              }}
+            >
+              <Box>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: 900 }}
+                >
+                  AI Explanation
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  sx={{
+                    mt: 0.8,
+                    color: "text.secondary",
+                    lineHeight: 1.7,
+                  }}
+                >
+                  {insight.explanation}
+                </Typography>
+              </Box>
+
+              <Box>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: 900 }}
+                >
+                  Business Impact
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  sx={{
+                    mt: 0.8,
+                    color: "text.secondary",
+                    lineHeight: 1.7,
+                  }}
+                >
+                  {insight.businessImpact}
+                </Typography>
+              </Box>
+
+              <Box>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: 900 }}
+                >
+                  Recommended Decision
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  sx={{
+                    mt: 0.8,
+                    color: "text.secondary",
+                    lineHeight: 1.7,
+                  }}
+                >
+                  {insight.recommendedDecision}
+                </Typography>
+              </Box>
+
+              <Box>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: 900 }}
+                >
+                  Uncertainty Statement
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  sx={{
+                    mt: 0.8,
+                    color: "text.secondary",
+                    lineHeight: 1.7,
+                  }}
+                >
+                  {insight.uncertaintyStatement}
+                </Typography>
+              </Box>
+            </Box>
+          </Paper>
+
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 3,
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <SectionHeader
+              icon={<ManageSearchOutlinedIcon />}
+              title="Explainable AI — Primary Drivers"
+              subtitle="Feature-level contribution to the prediction or anomaly."
+            />
+
+            <Box
+              sx={{
+                display: "grid",
+                gap: 1.8,
+              }}
+            >
+              {insight.featureDrivers
+                .sort(
+                  (a, b) =>
+                    b.importanceScore -
+                    a.importanceScore,
+                )
+                .map((driver) => (
+                  <Box
+                    key={driver.featureId}
+                    sx={{
+                      p: 2.3,
+                      borderRadius: 3,
+                      border: "1px solid",
+                      borderColor: "divider",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: {
+                          xs: "column",
+                          sm: "row",
+                        },
+                        justifyContent:
+                          "space-between",
+                        gap: 1.5,
+                      }}
+                    >
+                      <Box>
+                        <Typography
+                          variant="body1"
+                          sx={{ fontWeight: 900 }}
+                        >
+                          {driver.featureName}
+                        </Typography>
+
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: "text.secondary",
+                          }}
+                        >
+                          Observed value:{" "}
+                          {driver.featureValue}
+                        </Typography>
+                      </Box>
+
+                      <Chip
+                        label={driver.direction}
+                        size="small"
+                        color={
+                          driver.direction ===
+                          "Increases Risk"
+                            ? "error"
+                            : driver.direction ===
+                                "Reduces Risk"
+                              ? "success"
+                              : "default"
+                        }
+                      />
+                    </Box>
+
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        mt: 1.2,
+                        lineHeight: 1.65,
+                      }}
+                    >
+                      {driver.explanation}
+                    </Typography>
+
+                    <Box sx={{ mt: 1.4 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent:
+                            "space-between",
+                          mb: 0.6,
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: "text.secondary",
+                          }}
+                        >
+                          Importance
+                        </Typography>
+
+                        <Typography
+                          variant="caption"
+                          sx={{ fontWeight: 900 }}
+                        >
+                          {
+                            driver.importanceScore
+                          }
+                          %
+                        </Typography>
+                      </Box>
+
+                      <LinearProgress
+                        variant="determinate"
+                        value={
+                          driver.importanceScore
+                        }
+                        color={
+                          driver.direction ===
+                          "Reduces Risk"
+                            ? "success"
+                            : driver.direction ===
+                                "Neutral"
+                              ? "info"
+                              : "error"
+                        }
+                        sx={{
+                          height: 7,
+                          borderRadius: 99,
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                ))}
+            </Box>
+          </Paper>
+
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 3,
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <SectionHeader
+              icon={<DescriptionOutlinedIcon />}
+              title="Supporting Evidence"
+              subtitle="Records and portfolio evidence supporting the AI insight."
+            />
+
+            <TableContainer>
+              <Table sx={{ minWidth: 1050 }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 900 }}>
+                      Evidence
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 900 }}>
+                      Type
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 900 }}>
+                      Reference
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 900 }}>
+                      Date
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 900 }}>
+                      Relevance
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+
+                <TableBody>
+                  {insight.supportingEvidence.map(
+                    (evidence) => (
+                      <TableRow
+                        key={evidence.evidenceId}
+                        hover
+                      >
+                        <TableCell>
+                          <Typography
+                            variant="body2"
+                            sx={{ fontWeight: 900 }}
+                          >
+                            {evidence.title}
+                          </Typography>
+
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: "text.secondary",
+                            }}
+                          >
+                            {evidence.description}
+                          </Typography>
+                        </TableCell>
+
+                        <TableCell>
+                          {evidence.evidenceType}
+                        </TableCell>
+
+                        <TableCell>
+                          {evidence.referenceId}
+                        </TableCell>
+
+                        <TableCell>
+                          {formatDate(evidence.date)}
+                        </TableCell>
+
+                        <TableCell>
+                          <Chip
+                            label={`${evidence.relevanceScore}%`}
+                            size="small"
+                            color={
+                              evidence.relevanceScore >=
+                              95
+                                ? "success"
+                                : "info"
+                            }
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ),
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 3,
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <SectionHeader
+              icon={<GroupsOutlinedIcon />}
+              title="Affected Entities"
+              subtitle="Members, providers, claims, payments or portfolios linked to this insight."
+            />
+
+            <TableContainer>
+              <Table sx={{ minWidth: 1050 }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 900 }}>
+                      Entity
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 900 }}>
+                      Type
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 900 }}>
+                      Relationship
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 900 }}>
+                      Risk
+                    </TableCell>
+                    <TableCell
+                      align="right"
+                      sx={{ fontWeight: 900 }}
+                    >
+                      Financial Value
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+
+                <TableBody>
+                  {insight.affectedEntities.map(
+                    (entity) => (
+                      <TableRow
+                        key={entity.entityId}
+                        hover
+                      >
+                        <TableCell>
+                          <Typography
+                            variant="body2"
+                            sx={{ fontWeight: 900 }}
+                          >
+                            {entity.entityName}
+                          </Typography>
+
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: "text.secondary",
+                            }}
+                          >
+                            {entity.entityId}
+                          </Typography>
+                        </TableCell>
+
+                        <TableCell>
+                          {entity.entityType}
+                        </TableCell>
+
+                        <TableCell>
+                          {entity.relationship}
+                        </TableCell>
+
+                        <TableCell>
+                          <Chip
+                            label={`${entity.riskScore}/100`}
+                            size="small"
+                            color={
+                              entity.riskScore >= 85
+                                ? "error"
+                                : entity.riskScore >=
+                                    70
+                                  ? "warning"
+                                  : "info"
+                            }
+                          />
+                        </TableCell>
+
+                        <TableCell align="right">
+                          <Typography
+                            variant="body2"
+                            sx={{ fontWeight: 900 }}
+                          >
+                            {formatCurrency(
+                              entity.financialValue,
+                            )}
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    ),
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 3,
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <SectionHeader
+              icon={<RecommendOutlinedIcon />}
+              title="Recommended Actions"
+              subtitle="AI-supported actions requiring authorised human decision-making."
+            />
+
+            <Box
+              sx={{
+                display: "grid",
+                gap: 1.7,
+              }}
+            >
+              {insight.recommendedActions.map(
+                (action) => (
+                  <Box
+                    key={action.actionId}
+                    sx={{
+                      p: 2.4,
+                      borderRadius: 3,
+                      border: "1px solid",
+                      borderColor: "divider",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: {
+                          xs: "column",
+                          md: "row",
+                        },
+                        justifyContent:
+                          "space-between",
+                        gap: 2,
+                      }}
+                    >
+                      <Box>
+                        <Typography
+                          variant="h6"
+                          sx={{ fontWeight: 900 }}
+                        >
+                          {action.action}
+                        </Typography>
+
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: "text.secondary",
+                          }}
+                        >
+                          Owner: {action.owner} · Due{" "}
+                          {formatDate(action.dueDate)}
+                        </Typography>
+                      </Box>
+
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: 1,
+                        }}
+                      >
+                        <Chip
+                          label={action.priority}
+                          size="small"
+                          color={getSeverityColour(
+                            action.priority,
+                          )}
+                        />
+
+                        <Chip
+                          label={action.status}
+                          size="small"
+                          color={
+                            action.status ===
+                            "Completed"
+                              ? "success"
+                              : action.status ===
+                                    "Rejected"
+                                ? "error"
+                                : action.status ===
+                                      "In Progress"
+                                  ? "info"
+                                  : "warning"
+                          }
+                        />
+                      </Box>
+                    </Box>
+
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        mt: 1.2,
+                        color: "text.secondary",
+                        lineHeight: 1.7,
+                      }}
+                    >
+                      {action.rationale}
+                    </Typography>
+
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        mt: 1.2,
+                        fontWeight: 900,
+                        color: "success.main",
+                      }}
+                    >
+                      Estimated impact:{" "}
+                      {formatCurrency(
+                        action.estimatedImpact,
+                      )}
+                    </Typography>
+                  </Box>
+                ),
+              )}
+            </Box>
+          </Paper>
+
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 3,
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <SectionHeader
+              icon={<ModelTrainingOutlinedIcon />}
+              title="Model Information"
+              subtitle="AI model identity, performance and lifecycle status."
+            />
+
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "repeat(2, minmax(0, 1fr))",
+                  lg: "repeat(3, minmax(0, 1fr))",
+                },
+                gap: 2.3,
+              }}
+            >
+              <DetailItem
+                label="Model Name"
+                value={insight.model.modelName}
+              />
+
+              <DetailItem
+                label="Model ID"
+                value={insight.model.modelId}
+              />
+
+              <DetailItem
+                label="Version"
+                value={
+                  insight.model.modelVersion
+                }
+              />
+
+              <DetailItem
+                label="Model Type"
+                value={insight.model.modelType}
+              />
+
+              <DetailItem
+                label="Business Domain"
+                value={
+                  insight.model.businessDomain
+                }
+              />
+
+              <DetailItem
+                label="Owner"
+                value={insight.model.owner}
+              />
+
+              <DetailItem
+                label="Deployment"
+                value={
+                  insight.model
+                    .deploymentStatus
+                }
+              />
+
+              <DetailItem
+                label="Training Data Period"
+                value={
+                  insight.model
+                    .trainingDataPeriod
+                }
+              />
+
+              <DetailItem
+                label="Performance"
+                value={`${insight.model.performanceMetric}: ${insight.model.performanceValue}`}
+              />
+
+              <DetailItem
+                label="Last Validated"
+                value={formatDate(
+                  insight.model
+                    .lastValidatedDate,
+                )}
+              />
+
+              <DetailItem
+                label="Next Review"
+                value={formatDate(
+                  insight.model.nextReviewDate,
+                )}
+              />
+            </Box>
+          </Paper>
+
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 3,
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <SectionHeader
+              icon={<TimelineOutlinedIcon />}
+              title="Insight Timeline"
+              subtitle="Chronological record of model generation, review and action."
+            />
+
+            <Box sx={{ display: "grid" }}>
+              {insight.timeline.map(
+                (event, index) => (
+                  <Box
+                    key={event.eventId}
+                    sx={{
+                      position: "relative",
+                      display: "grid",
+                      gridTemplateColumns:
+                        "42px minmax(0, 1fr)",
+                      gap: 1.6,
+                      pb:
+                        index ===
+                        insight.timeline.length - 1
+                          ? 0
+                          : 3,
+                    }}
+                  >
+                    {index !==
+                      insight.timeline.length -
+                        1 && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          left: 20,
+                          top: 42,
+                          bottom: 0,
+                          width: 2,
+                          backgroundColor: "divider",
+                        }}
+                      />
+                    )}
+
+                    <Box
+                      sx={{
+                        width: 42,
+                        height: 42,
+                        zIndex: 1,
+                        display: "grid",
+                        placeItems: "center",
+                        borderRadius: "50%",
+                        color:
+                          event.status ===
+                          "Completed"
+                            ? "success.main"
+                            : event.status ===
+                                "Escalated"
+                              ? "error.main"
+                              : "warning.main",
+                        backgroundColor:
+                          event.status ===
+                          "Completed"
+                            ? "rgba(46,125,50,0.12)"
+                            : event.status ===
+                                "Escalated"
+                              ? "rgba(211,47,47,0.12)"
+                              : "rgba(237,108,2,0.12)",
+                      }}
+                    >
+                      {event.status ===
+                      "Completed" ? (
+                        <CheckCircleOutlinedIcon fontSize="small" />
+                      ) : event.status ===
+                        "Escalated" ? (
+                        <WarningAmberOutlinedIcon fontSize="small" />
+                      ) : (
+                        <ScheduleOutlinedIcon fontSize="small" />
+                      )}
+                    </Box>
+
+                    <Box
+                      sx={{
+                        p: 2.2,
+                        borderRadius: 2.5,
+                        backgroundColor:
+                          "rgba(27,37,89,0.035)",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: {
+                            xs: "column",
+                            sm: "row",
+                          },
+                          justifyContent:
+                            "space-between",
+                          gap: 1,
+                        }}
+                      >
+                        <Box>
+                          <Typography
+                            variant="body1"
+                            sx={{ fontWeight: 900 }}
+                          >
+                            {event.event}
+                          </Typography>
+
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: "text.secondary",
+                            }}
+                          >
+                            {formatDate(event.date)} ·{" "}
+                            {event.actor}
+                          </Typography>
+                        </Box>
+
+                        <Chip
+                          label={event.status}
+                          size="small"
+                          color={getTimelineColour(
+                            event.status,
+                          )}
+                        />
+                      </Box>
+
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          mt: 1,
+                          lineHeight: 1.65,
+                        }}
+                      >
+                        {event.description}
+                      </Typography>
+                    </Box>
+                  </Box>
+                ),
+              )}
+            </Box>
+          </Paper>
+        </Box>
+
+        <Box
+          sx={{
+            display: "grid",
+            gap: 3,
+            position: {
+              xl: "sticky",
+            },
+            top: {
+              xl: 88,
+            },
+          }}
+        >
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 3,
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <SectionHeader
+              icon={<AssignmentTurnedInOutlinedIcon />}
+              title="Human Review"
+            />
+
+            <Box
+              sx={{
+                display: "grid",
+                gap: 2.2,
+              }}
+            >
+              <DetailItem
+                label="Reviewer"
+                value={
+                  insight.humanReview.reviewer
+                }
+              />
+
+              <DetailItem
+                label="Reviewer Role"
+                value={
+                  insight.humanReview
+                    .reviewerRole
+                }
+              />
+
+              <DetailItem
+                label="Review Status"
+                value={
+                  <Chip
+                    label={
+                      insight.humanReview
+                        .reviewStatus
+                    }
+                    size="small"
+                    color={getReviewColour(
+                      insight.humanReview
+                        .reviewStatus,
+                    )}
+                  />
+                }
+              />
+
+              <DetailItem
+                label="Review Date"
+                value={formatDate(
+                  insight.humanReview
+                    .reviewDate,
+                )}
+              />
+
+              <DetailItem
+                label="Override Applied"
+                value={
+                  insight.humanReview
+                    .overrideApplied
+                    ? "Yes"
+                    : "No"
+                }
+              />
+
+              {insight.humanReview.comments && (
+                <DetailItem
+                  label="Comments"
+                  value={
+                    insight.humanReview.comments
+                  }
+                />
+              )}
+
+              {insight.humanReview
+                .overrideReason && (
+                <DetailItem
+                  label="Override Reason"
+                  value={
+                    insight.humanReview
+                      .overrideReason
+                  }
+                />
+              )}
+            </Box>
+          </Paper>
+
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 3,
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <SectionHeader
+              icon={<VerifiedUserOutlinedIcon />}
+              title="Responsible AI Governance"
+            />
+
+            <Box
+              sx={{
+                display: "grid",
+                gap: 2.1,
+              }}
+            >
+              <DetailItem
+                label="Governance"
+                value={
+                  <Chip
+                    label={
+                      insight.governance
+                        .governanceStatus
+                    }
+                    size="small"
+                    color={getGovernanceColour(
+                      insight.governance
+                        .governanceStatus,
+                    )}
+                  />
+                }
+              />
+
+              <DetailItem
+                label="Bias Status"
+                value={
+                  <Chip
+                    label={
+                      insight.governance
+                        .biasStatus
+                    }
+                    size="small"
+                    color={getBiasColour(
+                      insight.governance
+                        .biasStatus,
+                    )}
+                  />
+                }
+              />
+
+              <DetailItem
+                label="Drift Status"
+                value={
+                  <Chip
+                    label={
+                      insight.governance
+                        .driftStatus
+                    }
+                    size="small"
+                    color={getDriftColour(
+                      insight.governance
+                        .driftStatus,
+                    )}
+                  />
+                }
+              />
+
+              <DetailItem
+                label="Audit Status"
+                value={
+                  <Chip
+                    label={
+                      insight.governance
+                        .auditStatus
+                    }
+                    size="small"
+                    color={getAuditColour(
+                      insight.governance
+                        .auditStatus,
+                    )}
+                  />
+                }
+              />
+
+              <DetailItem
+                label="Privacy"
+                value={
+                  insight.governance
+                    .privacyStatus
+                }
+              />
+
+              <DetailItem
+                label="Human Oversight"
+                value={
+                  insight.governance
+                    .humanOversightRequired
+                    ? "Required"
+                    : "Not required"
+                }
+              />
+            </Box>
+
+            <Divider sx={{ my: 2.4 }} />
+
+            <Box sx={{ display: "grid", gap: 2 }}>
+              <Box>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "text.secondary",
+                    fontWeight: 700,
+                  }}
+                >
+                  FAIRNESS SCORE
+                </Typography>
+
+                <Box
+                  sx={{
+                    mt: 0.7,
+                    display: "flex",
+                    justifyContent:
+                      "space-between",
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 900 }}
+                  >
+                    {
+                      insight.governance
+                        .fairnessScore
+                    }
+                    %
+                  </Typography>
+                </Box>
+
+                <LinearProgress
+                  variant="determinate"
+                  value={
+                    insight.governance
+                      .fairnessScore
+                  }
+                  color="success"
+                  sx={{
+                    mt: 0.6,
+                    height: 7,
+                    borderRadius: 99,
+                  }}
+                />
+              </Box>
+
+              <Box>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "text.secondary",
+                    fontWeight: 700,
+                  }}
+                >
+                  EXPLAINABILITY SCORE
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  sx={{
+                    mt: 0.7,
+                    fontWeight: 900,
+                  }}
+                >
+                  {
+                    insight.governance
+                      .explainabilityScore
+                  }
+                  %
+                </Typography>
+
+                <LinearProgress
+                  variant="determinate"
+                  value={
+                    insight.governance
+                      .explainabilityScore
+                  }
+                  sx={{
+                    mt: 0.6,
+                    height: 7,
+                    borderRadius: 99,
+                  }}
+                />
+              </Box>
+
+              <Box>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "text.secondary",
+                    fontWeight: 700,
+                  }}
+                >
+                  DATA QUALITY SCORE
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  sx={{
+                    mt: 0.7,
+                    fontWeight: 900,
+                  }}
+                >
+                  {
+                    insight.governance
+                      .dataQualityScore
+                  }
+                  %
+                </Typography>
+
+                <LinearProgress
+                  variant="determinate"
+                  value={
+                    insight.governance
+                      .dataQualityScore
+                  }
+                  color="info"
+                  sx={{
+                    mt: 0.6,
+                    height: 7,
+                    borderRadius: 99,
+                  }}
+                />
+              </Box>
+            </Box>
+          </Paper>
+
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 3,
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <SectionHeader
+              icon={<SecurityOutlinedIcon />}
+              title="Insight Control"
+            />
+
+            <Box
+              sx={{
+                display: "grid",
+                gap: 2.2,
+              }}
+            >
+              <DetailItem
+                label="Assigned Owner"
+                value={insight.assignedOwner}
+              />
+
+              <DetailItem
+                label="Owner Role"
+                value={insight.ownerRole}
+              />
+
+              <DetailItem
+                label="Business Unit"
+                value={insight.businessUnit}
+              />
+
+              <DetailItem
+                label="Primary Entity"
+                value={insight.primaryEntityName}
+              />
+
+              <DetailItem
+                label="Entity Type"
+                value={insight.primaryEntityType}
+              />
+
+              <DetailItem
+                label="Prediction Period"
+                value={insight.predictionPeriod}
+              />
+
+              <DetailItem
+                label="Trend"
+                value={insight.trendDirection}
+              />
+
+              <DetailItem
+                label="Impact Type"
+                value={insight.impactType}
+              />
+            </Box>
+          </Paper>
+
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 3,
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <SectionHeader
+              icon={<FactCheckOutlinedIcon />}
+              title="Decision Actions"
+            />
+
+            <Box
+              sx={{
+                display: "grid",
+                gap: 1.2,
+              }}
+            >
+              <Button
+                variant="contained"
+                sx={{
+                  py: 1.15,
+                  textTransform: "none",
+                  fontWeight: 900,
+                }}
+              >
+                Approve Recommendation
+              </Button>
+
+              <Button
+                variant="outlined"
+                sx={{
+                  py: 1.15,
+                  textTransform: "none",
+                  fontWeight: 800,
+                }}
+              >
+                Assign Human Review
+              </Button>
+
+              <Button
+                variant="outlined"
+                sx={{
+                  py: 1.15,
+                  textTransform: "none",
+                  fontWeight: 800,
+                }}
+              >
+                Add Review Comment
+              </Button>
+
+              <Button
+                variant="outlined"
+                sx={{
+                  py: 1.15,
+                  textTransform: "none",
+                  fontWeight: 800,
+                }}
+              >
+                Escalate Insight
+              </Button>
+
+              <Button
+                variant="outlined"
+                color="warning"
+                sx={{
+                  py: 1.15,
+                  textTransform: "none",
+                  fontWeight: 800,
+                }}
+              >
+                Request Model Review
+              </Button>
+            </Box>
+          </Paper>
+
+          <Alert severity="info">
+            AI-generated insights are decision-support
+            recommendations. They do not independently
+            make clinical, underwriting, claims,
+            payment, fraud or coverage decisions.
+          </Alert>
+        </Box>
+      </Box>
+
+      <Box
+        sx={{
+          mt: 3,
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "space-between",
+          gap: 2,
+        }}
+      >
+        <Typography
+          variant="caption"
+          sx={{ color: "text.secondary" }}
+        >
+          {insight.featureDrivers.length} explainability
+          drivers · {insight.supportingEvidence.length}{" "}
+          evidence items ·{" "}
+          {insight.recommendedActions.length} actions
+        </Typography>
+
+        <Typography
+          variant="caption"
+          sx={{
+            color: "text.secondary",
+            textAlign: "right",
+          }}
+        >
+          MediVantage AI Insight 360 · Designed &
+          Developed by Dr. Samuel Israel
+        </Typography>
+      </Box>
+    </Box>
+  );
+}

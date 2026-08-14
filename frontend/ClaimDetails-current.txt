@@ -1,0 +1,611 @@
+import {
+  ArrowBack,
+  CheckCircleOutlined,
+  CloseOutlined,
+  DescriptionOutlined,
+  LocalHospitalOutlined,
+  PersonOutlined,
+  PolicyOutlined,
+  WarningAmberOutlined,
+} from "@mui/icons-material";
+import {
+  Avatar,
+  Box,
+  Button,
+  Chip,
+  Divider,
+  LinearProgress,
+  Paper,
+  Typography,
+} from "@mui/material";
+import { useNavigate, useParams } from "react-router-dom";
+import FinancialAdjudication from "../components/FinancialAdjudication";
+import ClaimTimelineAudit from "../components/ClaimTimelineAudit";
+import ClaimCommunicationActions from "../components/ClaimCommunicationActions";
+import ClaimDecisionWorkflow from "../components/ClaimDecisionWorkflow";
+import ClaimDecisionCommandBar from "../components/ClaimDecisionCommandBar";
+import ClaimSettlementPanel from "../components/ClaimSettlementPanel";
+
+interface InformationItemProps {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}
+
+function InformationItem({
+  label,
+  value,
+  highlight = false,
+}: InformationItemProps) {
+  return (
+    <Box>
+      <Typography
+        variant="caption"
+        sx={{
+          color: "text.secondary",
+          display: "block",
+          mb: 0.4,
+          fontWeight: 600,
+        }}
+      >
+        {label}
+      </Typography>
+
+      <Typography
+        variant="body2"
+        sx={{
+          color: highlight ? "primary.main" : "text.primary",
+          fontWeight: highlight ? 700 : 600,
+        }}
+      >
+        {value}
+      </Typography>
+    </Box>
+  );
+}
+
+export default function ClaimDetails() {
+  const navigate = useNavigate();
+  const { claimId } = useParams();
+
+  const resolvedClaimId = claimId ?? "CLM-2026-10471";
+
+  return (
+    <Box sx={{ pb: 5 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: { xs: "flex-start", lg: "center" },
+          justifyContent: "space-between",
+          flexDirection: { xs: "column", lg: "row" },
+          gap: 2,
+          mb: 3,
+        }}
+      >
+        <Box>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 800,
+              color: "text.primary",
+              mb: 0.5,
+            }}
+          >
+            Claim {resolvedClaimId}
+          </Typography>
+
+          <Typography variant="body1" sx={{ color: "text.secondary" }}>
+            Enterprise Claims Review Workspace
+          </Typography>
+        </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 1.25,
+          }}
+        >
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBack />}
+            onClick={() => navigate("/claims")}
+            sx={{ fontWeight: 700 }}
+          >
+            Back to Claims
+          </Button>
+
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={<CheckCircleOutlined />}
+            sx={{ fontWeight: 700 }}
+          >
+            Approve
+          </Button>
+
+          <Button
+            variant="outlined"
+            color="error"
+            startIcon={<CloseOutlined />}
+            sx={{ fontWeight: 700 }}
+          >
+            Reject
+          </Button>
+        </Box>
+      </Box>
+
+      <Paper
+        elevation={0}
+        sx={{
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 3,
+          p: { xs: 2, md: 3 },
+          mb: 3,
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: { xs: "flex-start", md: "center" },
+            flexDirection: { xs: "column", md: "row" },
+            gap: 2,
+          }}
+        >
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 800, mb: 0.5 }}>
+              Claim Summary
+            </Typography>
+
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
+              Claim ID: {resolvedClaimId}
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+            <Chip
+              label="Clinical Review"
+              color="primary"
+              sx={{ fontWeight: 700 }}
+            />
+            <Chip
+              label="Critical Priority"
+              color="error"
+              sx={{ fontWeight: 700 }}
+            />
+            <Chip
+              label="Fraud Risk: Low"
+              color="success"
+              sx={{ fontWeight: 700 }}
+            />
+            <Chip
+              label="SLA: 3h 42m"
+              color="warning"
+              variant="outlined"
+              sx={{ fontWeight: 700 }}
+            />
+          </Box>
+        </Box>
+      </Paper>
+
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            xl: "minmax(0, 1fr) minmax(0, 1.45fr)",
+          },
+          gap: 3,
+          alignItems: "start",
+        }}
+      >
+        <Paper
+          elevation={0}
+          sx={{
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: 3,
+            overflow: "hidden",
+          }}
+        >
+          <Box
+            sx={{
+              p: 2.5,
+              display: "flex",
+              alignItems: "center",
+              gap: 1.25,
+            }}
+          >
+            <PersonOutlined color="primary" />
+
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                Member 360
+              </Typography>
+
+              <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                Member identity, eligibility, policy and risk profile
+              </Typography>
+            </Box>
+          </Box>
+
+          <Divider />
+
+          <Box sx={{ p: 2.5 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                mb: 3,
+              }}
+            >
+              <Avatar
+                sx={{
+                  width: 64,
+                  height: 64,
+                  bgcolor: "primary.main",
+                  fontSize: 22,
+                  fontWeight: 800,
+                }}
+              >
+                AM
+              </Avatar>
+
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                  Amina Mohammed
+                </Typography>
+
+                <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                  Member ID: MBR-884291
+                </Typography>
+
+                <Chip
+                  label="Eligibility Active"
+                  color="success"
+                  size="small"
+                  sx={{ mt: 1, fontWeight: 700 }}
+                />
+              </Box>
+            </Box>
+
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "repeat(2, minmax(0, 1fr))",
+                },
+                gap: 2.5,
+              }}
+            >
+              <InformationItem label="Age" value="42 years" />
+              <InformationItem label="Gender" value="Female" />
+              <InformationItem
+                label="Policy Number"
+                value="POL-GOLD-220184"
+                highlight
+              />
+              <InformationItem label="Plan" value="Gold Plus Corporate" />
+              <InformationItem
+                label="Employer Group"
+                value="Horizon Energy Ltd."
+              />
+              <InformationItem label="Coverage Status" value="Active" />
+              <InformationItem
+                label="Policy Effective Date"
+                value="01 January 2026"
+              />
+              <InformationItem
+                label="Policy Expiry Date"
+                value="31 December 2026"
+              />
+            </Box>
+
+            <Divider sx={{ my: 3 }} />
+
+            <Box sx={{ mb: 1.5 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  mb: 0.8,
+                }}
+              >
+                <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                  Member Risk Score
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 800, color: "warning.main" }}
+                >
+                  38 / 100
+                </Typography>
+              </Box>
+
+              <LinearProgress
+                variant="determinate"
+                value={38}
+                color="warning"
+                sx={{ height: 9, borderRadius: 10 }}
+              />
+            </Box>
+
+            <Typography variant="caption" sx={{ color: "text.secondary" }}>
+              Moderate utilization risk based on chronic-condition history and
+              previous claims activity.
+            </Typography>
+          </Box>
+        </Paper>
+
+        <Paper
+          elevation={0}
+          sx={{
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: 3,
+            overflow: "hidden",
+          }}
+        >
+          <Box
+            sx={{
+              p: 2.5,
+              display: "flex",
+              alignItems: "center",
+              gap: 1.25,
+            }}
+          >
+            <LocalHospitalOutlined color="primary" />
+
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                Clinical Review
+              </Typography>
+
+              <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                Diagnosis, treatment, medical necessity and supporting evidence
+              </Typography>
+            </Box>
+          </Box>
+
+          <Divider />
+
+          <Box sx={{ p: 2.5 }}>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  md: "repeat(2, minmax(0, 1fr))",
+                },
+                gap: 2.5,
+              }}
+            >
+              <InformationItem
+                label="Primary Diagnosis"
+                value="Acute Appendicitis"
+                highlight
+              />
+
+              <InformationItem label="ICD-10 Code" value="K35.80" />
+
+              <InformationItem
+                label="Procedure"
+                value="Laparoscopic Appendectomy"
+              />
+
+              <InformationItem label="Procedure Code" value="CPT 44970" />
+
+              <InformationItem
+                label="Provider"
+                value="Al Noor Specialist Hospital"
+              />
+
+              <InformationItem
+                label="Attending Physician"
+                value="Dr. Khalid Al-Hassan"
+              />
+
+              <InformationItem
+                label="Admission Date"
+                value="18 July 2026, 14:20"
+              />
+
+              <InformationItem
+                label="Discharge Date"
+                value="20 July 2026, 11:10"
+              />
+
+              <InformationItem label="Length of Stay" value="2 days" />
+
+              <InformationItem
+                label="Admission Type"
+                value="Emergency Admission"
+              />
+            </Box>
+
+            <Divider sx={{ my: 3 }} />
+
+            <Box
+              sx={{
+                borderRadius: 2,
+                border: "1px solid",
+                borderColor: "success.light",
+                bgcolor: "success.50",
+                p: 2,
+                mb: 2.5,
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 1.25,
+                }}
+              >
+                <CheckCircleOutlined color="success" />
+
+                <Box>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ fontWeight: 800, color: "success.dark" }}
+                  >
+                    Medical Necessity Supported
+                  </Typography>
+
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "text.secondary", mt: 0.5 }}
+                  >
+                    Clinical presentation, imaging findings and operative
+                    documentation support emergency surgical intervention.
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+
+            <Box
+              sx={{
+                borderRadius: 2,
+                border: "1px solid",
+                borderColor: "warning.light",
+                p: 2,
+                mb: 3,
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 1.25,
+                }}
+              >
+                <WarningAmberOutlined color="warning" />
+
+                <Box>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
+                    Clinical Review Observation
+                  </Typography>
+
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "text.secondary", mt: 0.5 }}
+                  >
+                    Verify the assistant surgeon charge and confirm that the
+                    pathology report has been uploaded before final approval.
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+
+            <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 1.5 }}>
+              Supporting Documents
+            </Typography>
+
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  md: "repeat(2, minmax(0, 1fr))",
+                },
+                gap: 1.5,
+              }}
+            >
+              {[
+                "Emergency Admission Note",
+                "CT Abdomen Report",
+                "Operative Report",
+                "Discharge Summary",
+              ].map((document) => (
+                <Box
+                  key={document}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.25,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    borderRadius: 2,
+                    p: 1.5,
+                  }}
+                >
+                  <DescriptionOutlined color="primary" />
+
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                      {document}
+                    </Typography>
+
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "text.secondary" }}
+                    >
+                      PDF | Verified
+                    </Typography>
+                  </Box>
+
+                  <Button size="small" sx={{ fontWeight: 700 }}>
+                    View
+                  </Button>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        </Paper>
+      </Box>
+      <ClaimDecisionCommandBar />
+
+      <FinancialAdjudication />
+
+      <ClaimTimelineAudit />
+
+      <ClaimCommunicationActions />
+
+      <ClaimDecisionWorkflow />
+
+      <ClaimSettlementPanel />
+
+      <Paper
+        elevation={0}
+        sx={{
+          mt: 3,
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 3,
+          p: 2.5,
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: 1.5,
+          }}
+        >
+          <PolicyOutlined color="primary" />
+
+          <Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
+              Coverage Validation
+            </Typography>
+
+            <Typography
+              variant="body2"
+              sx={{ color: "text.secondary", mt: 0.5 }}
+            >
+              Inpatient emergency surgery is covered under the member's Gold
+              Plus Corporate plan. Pre-authorization was waived because the
+              admission was classified as an emergency.
+            </Typography>
+          </Box>
+        </Box>
+      </Paper>
+    </Box>
+  );
+}
+

@@ -1,0 +1,6 @@
+{
+  "action": "REQUEST_MORE_INFORMATION",
+  "reviewer": "Dr. Clinical Reviewer",
+  "rationale": "Additional clinical documentation is required before a final determination can be made.",
+  "information_requested": "Please provide the most recent orthopedic consultation note, documented conservative-treatment history, and supporting imaging report."
+}

@@ -1,0 +1,5 @@
+{
+  "action": "DENY",
+  "reviewer": "Dr. Clinical Reviewer",
+  "rationale": "The submitted clinical documentation does not demonstrate that the requested service meets the applicable medical necessity criteria. Authorization is denied following clinical review."
+}

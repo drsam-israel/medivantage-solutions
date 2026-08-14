@@ -1,0 +1,7 @@
+{
+  "action": "ESCALATE",
+  "reviewer": "Dr. Clinical Reviewer",
+  "rationale": "The case requires higher-level clinical determination because of complexity and uncertainty in the available clinical evidence.",
+  "escalation_reason": "Complex surgical authorization requiring Medical Director review before final determination.",
+  "escalated_to": "MEDICAL_DIRECTOR"
+}
