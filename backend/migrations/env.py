@@ -37,9 +37,18 @@ config = context.config
 from app.models.ai_insight import AIInsight  # noqa: F401
 
 
+database_url = settings.database_url
+
+if database_url.startswith("postgresql://"):
+    database_url = database_url.replace(
+        "postgresql://",
+        "postgresql+psycopg://",
+        1,
+    )
+
 config.set_main_option(
     "sqlalchemy.url",
-    settings.database_url,
+    database_url,
 )
 
 
