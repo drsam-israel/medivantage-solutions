@@ -297,7 +297,7 @@ export function mapReimbursementToPayment(
       reimbursement.approved_at && reimbursement.approved_by
         ? [
             {
-              approvalId: `APR-${reimbursement.id}`,
+              approvalId: `APR-${reimbursement.reimbursement_number}`,
               level: "Finance Approval",
               approver: reimbursement.approved_by,
               role: "Finance Operations",
