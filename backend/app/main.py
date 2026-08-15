@@ -34,17 +34,18 @@ def resolve_cors_origins(
     configured_origins: str | Sequence[str] | None,
 ) -> list[str]:
     """
-    Normalize CORS configuration and ensure the local Vite
-    development URLs are available during MVP development.
+    Normalize configured CORS origins and always include
+    MediVantage development and production frontend URLs.
     """
 
-    default_origins = [
+    required_origins = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "https://medivantage-frontend.onrender.com",
     ]
 
     if configured_origins is None:
-        return default_origins
+        return required_origins
 
     if isinstance(configured_origins, str):
         normalized_origins = [
@@ -63,7 +64,7 @@ def resolve_cors_origins(
         dict.fromkeys(
             [
                 *normalized_origins,
-                *default_origins,
+                *required_origins,
             ],
         ),
     )
@@ -91,6 +92,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # ------------------------------------------------------------------
 # Existing API Routers
@@ -165,6 +167,7 @@ app.include_router(
     ai_insight_router,
     prefix=settings.api_v1_prefix,
 )
+
 
 # ------------------------------------------------------------------
 # Versioned API Router
