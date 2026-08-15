@@ -6,8 +6,32 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.core.config import settings
 
 
-engine = create_engine(
+def normalize_database_url(database_url: str) -> str:
+    """
+    Normalize PostgreSQL connection URLs for SQLAlchemy.
+
+    Render provides PostgreSQL URLs using the standard
+    'postgresql://' scheme. MediVantage uses Psycopg 3,
+    so SQLAlchemy must explicitly use the 'psycopg' driver.
+    """
+
+    if database_url.startswith("postgresql://"):
+        return database_url.replace(
+            "postgresql://",
+            "postgresql+psycopg://",
+            1,
+        )
+
+    return database_url
+
+
+database_url = normalize_database_url(
     settings.database_url,
+)
+
+
+engine = create_engine(
+    database_url,
     pool_pre_ping=True,
 )
 
