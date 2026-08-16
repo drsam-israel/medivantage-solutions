@@ -819,7 +819,7 @@ Production deployment involving healthcare data would require appropriate securi
 29. Product Leadership
 
 Dr. Samuel Israel
-Founder & Product Lead — MediVantage Solutions™
+Product Lead — MediVantage Solutions™
 
 Healthcare AI Product Manager | Clinical AI | Digital Health Transformation
 
