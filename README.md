@@ -2,8 +2,13 @@
 
 ## AI-Enabled Healthcare Payer Operations & Decision Intelligence Platform
 
-![MVP](https://img.shields.io/badge/Product-Released%20MVP-success)![Healthcare](https://img.shields.io/badge/Industry-Healthcare%20Payer-blue)![AI](https://img.shields.io/badge
-AI-Decision%20Intelligence-purple)![Responsible AI](https://img.shields.io/badge/AI%20Governance-Human--in--the--Loop-teal)![React](https://img.shields.io/badge/Frontend-React%20%7C%20TypeScript-61DAFB)![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688)![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791)
+![MVP](https://img.shields.io/badge/Product-Released%20MVP-success)
+![Healthcare](https://img.shields.io/badge/Industry-Healthcare%20Payer-blue)
+![AI](https://img.shields.io/badge/AI-Decision%20Intelligence-purple)
+![Responsible AI](https://img.shields.io/badge/AI%20Governance-Human--in--the--Loop-teal)
+![React](https://img.shields.io/badge/Frontend-React%20%7C%20TypeScript-61DAFB)
+![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688)
+![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791)
 ![Deployment](https://img.shields.io/badge/Deployment-Live-success)
 
 > **Connected Healthcare Payer Operations. Explainable Intelligence. Human-Governed Decisions.**
