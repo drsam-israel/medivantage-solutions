@@ -44,6 +44,9 @@ import { getFraudInvestigatorNotes } from "../services/fraudInvestigatorNotesApi
 import { getFraudActions } from "../services/fraudActionsApi";
 import { getFraudRecoveries } from "../services/fraudRecoveriesApi";
 import { getFraudTimelineEvents } from "../services/fraudTimelineApi";
+import { getClaims } from "../services/claimsApi";
+import { getMembers } from "../services/membersApi";
+import { getProviders } from "../services/providersApi";
 
 import type {
   FraudAction,
@@ -54,6 +57,9 @@ import type {
   FraudRecovery,
   FraudTimelineEvent,
 } from "../types/fraud";
+import type { Claim } from "../types/claim";
+import type { Member } from "../types/member";
+import type { Provider } from "../types/provider";
 
 type ChipColour =
   | "default"
@@ -248,6 +254,9 @@ export default function FraudCaseDetails() {
   const [actions, setActions] = useState<FraudAction[]>([]);
   const [recoveries, setRecoveries] = useState<FraudRecovery[]>([]);
   const [timeline, setTimeline] = useState<FraudTimelineEvent[]>([]);
+  const [claims, setClaims] = useState<Claim[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [providers, setProviders] = useState<Provider[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -282,6 +291,9 @@ export default function FraudCaseDetails() {
           caseActions,
           caseRecoveries,
           caseTimeline,
+          claimsData,
+          membersData,
+          providersData,
         ] = await Promise.all([
           getFraudAlerts(selected.id),
           getFraudEvidence(selected.id),
@@ -289,6 +301,9 @@ export default function FraudCaseDetails() {
           getFraudActions(selected.id),
           getFraudRecoveries(selected.id),
           getFraudTimelineEvents(selected.id),
+          getClaims(),
+          getMembers(),
+          getProviders(),
         ]);
 
         if (!active) return;
@@ -299,6 +314,9 @@ export default function FraudCaseDetails() {
         setNotes(caseNotes);
         setActions(caseActions);
         setRecoveries(caseRecoveries);
+        setClaims(claimsData);
+        setMembers(membersData);
+        setProviders(providersData);
         setTimeline(
           [...caseTimeline].sort(
             (a, b) =>
@@ -379,6 +397,60 @@ export default function FraudCaseDetails() {
     Math.min(100, Number(fraudCase.ai_confidence ?? 0)),
   );
 
+  const linkedClaim = fraudCase.primary_claim_id
+    ? claims.find(
+        (claim) => claim.id === fraudCase.primary_claim_id,
+      )
+    : undefined;
+
+  const linkedMember = fraudCase.member_id
+    ? members.find(
+        (member) => member.id === fraudCase.member_id,
+      )
+    : undefined;
+
+  const linkedProvider = fraudCase.provider_id
+    ? providers.find(
+        (provider) => provider.id === fraudCase.provider_id,
+      )
+    : undefined;
+
+  const memberName = linkedMember
+    ? [
+        linkedMember.first_name,
+        linkedMember.middle_name,
+        linkedMember.last_name,
+      ]
+        .filter(Boolean)
+        .join(" ")
+    : fraudCase.member_id
+      ? "Member record unavailable"
+      : "No member linked";
+
+  const memberReference =
+    linkedMember?.member_number ??
+    (fraudCase.member_id
+      ? "Member record unavailable"
+      : "No member linked");
+
+  const providerName =
+    linkedProvider?.provider_name ??
+    (fraudCase.provider_id
+      ? "Provider record unavailable"
+      : "No provider linked");
+
+  const providerReference =
+    linkedProvider?.provider_code ??
+    (fraudCase.provider_id
+      ? "Provider record unavailable"
+      : "No provider linked");
+
+  const claimReference =
+    linkedClaim?.claim_number ??
+    (fraudCase.primary_claim_id
+      ? "Claim record unavailable"
+      : "No claim linked");
+
   return (
     <Box sx={{ width: "100%", pb: 4 }}>
       <Button
@@ -426,9 +498,9 @@ export default function FraudCaseDetails() {
               {fraudCase.title}
             </Typography>
             <Typography variant="body1" sx={{ mt: 1, opacity: 0.88 }}>
-              Member {fraudCase.member_id ?? "Not linked"} · Provider{" "}
-              {fraudCase.provider_id ?? "Not linked"} · Claim{" "}
-              {fraudCase.primary_claim_id ?? "Not linked"}
+              Member {memberName} ({memberReference}) · Provider{" "}
+              {providerName} ({providerReference}) · Claim{" "}
+              {claimReference}
             </Typography>
             <Box sx={{ mt: 2, display: "flex", flexWrap: "wrap", gap: 1 }}>
               <Chip label={humanize(fraudCase.status)} color={statusColour(fraudCase.status)} />
@@ -766,11 +838,27 @@ export default function FraudCaseDetails() {
           <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid", borderColor: "divider" }}>
             <SectionHeader icon={<PersonSearchOutlinedIcon />} title="Case Identity" />
             <Box sx={{ display: "grid", gap: 1.5 }}>
-              <Typography variant="body2"><strong>Member ID:</strong> {fraudCase.member_id ?? "Not linked"}</Typography>
-              <Typography variant="body2"><strong>Provider ID:</strong> {fraudCase.provider_id ?? "Not linked"}</Typography>
-              <Typography variant="body2"><strong>Primary Claim:</strong> {fraudCase.primary_claim_id ?? "Not linked"}</Typography>
-              <Typography variant="body2"><strong>Source:</strong> {humanize(fraudCase.source)}</Typography>
-              <Typography variant="body2"><strong>Case Type:</strong> {humanize(fraudCase.case_type)}</Typography>
+              <Typography variant="body2">
+                <strong>Member:</strong> {memberName}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Member Number:</strong> {memberReference}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Provider:</strong> {providerName}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Provider Code:</strong> {providerReference}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Primary Claim:</strong> {claimReference}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Source:</strong> {humanize(fraudCase.source)}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Case Type:</strong> {humanize(fraudCase.case_type)}
+              </Typography>
             </Box>
           </Paper>
 

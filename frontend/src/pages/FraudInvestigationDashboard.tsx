@@ -52,6 +52,13 @@ import WorkspaceHeader from "../components/shared/WorkspaceHeader";
 import { getFraudCases } from "../services/fraudCasesApi";
 import { getFraudAlerts } from "../services/fraudAlertsApi";
 import { getFraudRecoveries } from "../services/fraudRecoveriesApi";
+import { getClaims } from "../services/claimsApi";
+import { getMembers } from "../services/membersApi";
+import { getProviders } from "../services/providersApi";
+
+import type { Claim } from "../types/claim";
+import type { Member } from "../types/member";
+import type { Provider } from "../types/provider";
 
 import type {
   FraudCase as ApiFraudCase,
@@ -575,6 +582,15 @@ export default function FraudInvestigationDashboard() {
   const [fraudRecoveries, setFraudRecoveries] =
     useState<FraudRecovery[]>([]);
 
+  const [claims, setClaims] =
+    useState<Claim[]>([]);
+
+  const [members, setMembers] =
+    useState<Member[]>([]);
+
+  const [providers, setProviders] =
+    useState<Provider[]>([]);
+
   const [isLoading, setIsLoading] =
     useState(true);
 
@@ -615,15 +631,24 @@ export default function FraudInvestigationDashboard() {
         setIsLoading(true);
         setLoadError(null);
 
-        const [cases, alerts, recoveries] =
-          await Promise.all([
-            getFraudCases({
-              skip: 0,
-              limit: 500,
-            }),
-            getFraudAlerts(),
-            getFraudRecoveries(),
-          ]);
+        const [
+          cases,
+          alerts,
+          recoveries,
+          claimsData,
+          membersData,
+          providersData,
+        ] = await Promise.all([
+          getFraudCases({
+            skip: 0,
+            limit: 500,
+          }),
+          getFraudAlerts(),
+          getFraudRecoveries(),
+          getClaims(),
+          getMembers(),
+          getProviders(),
+        ]);
 
         if (!active) {
           return;
@@ -632,6 +657,9 @@ export default function FraudInvestigationDashboard() {
         setFraudCases(cases);
         setFraudAlerts(alerts);
         setFraudRecoveries(recoveries);
+        setClaims(claimsData);
+        setMembers(membersData);
+        setProviders(providersData);
       } catch (error) {
         if (!active) {
           return;
@@ -738,6 +766,27 @@ export default function FraudInvestigationDashboard() {
       }
     };
 
+    const claimsById = new Map(
+      claims.map((claim) => [
+        claim.id,
+        claim,
+      ]),
+    );
+
+    const membersById = new Map(
+      members.map((member) => [
+        member.id,
+        member,
+      ]),
+    );
+
+    const providersById = new Map(
+      providers.map((provider) => [
+        provider.id,
+        provider,
+      ]),
+    );
+
     return fraudCases.map((fraudCase) => {
       const riskLevel = mapRisk(
         fraudCase.risk_level,
@@ -747,20 +796,56 @@ export default function FraudInvestigationDashboard() {
         fraudCase.priority,
       );
 
+      const linkedClaim =
+        fraudCase.primary_claim_id
+          ? claimsById.get(
+              fraudCase.primary_claim_id,
+            )
+          : undefined;
+
+      const linkedProvider =
+        fraudCase.provider_id
+          ? providersById.get(
+              fraudCase.provider_id,
+            )
+          : undefined;
+
+      const linkedMember =
+        fraudCase.member_id
+          ? membersById.get(
+              fraudCase.member_id,
+            )
+          : undefined;
+
+      const memberName = linkedMember
+        ? [
+            linkedMember.first_name,
+            linkedMember.middle_name,
+            linkedMember.last_name,
+          ]
+            .filter(Boolean)
+            .join(" ")
+        : fraudCase.member_id
+          ? "Member record unavailable"
+          : "No member linked";
+
       return {
         id: fraudCase.id,
         caseId: fraudCase.case_number,
         caseTitle: fraudCase.title,
         claimId:
-          fraudCase.primary_claim_id ??
-          "Not linked",
+          linkedClaim?.claim_number ??
+          (fraudCase.primary_claim_id
+            ? "Claim record unavailable"
+            : "No claim linked"),
         category: titleCaseToken(
           fraudCase.case_type,
         ),
         status: mapStatus(fraudCase),
         riskLevel,
         priority,
-        fraudRiskScore: riskScore(riskLevel),
+        fraudRiskScore:
+          riskScore(riskLevel),
         aiConfidenceScore: Number(
           fraudCase.ai_confidence ?? 0,
         ),
@@ -779,28 +864,36 @@ export default function FraudInvestigationDashboard() {
         alertSource: titleCaseToken(
           fraudCase.source,
         ),
-        createdDate: fraudCase.created_at,
+        createdDate:
+          fraudCase.created_at,
         provider: {
           providerId:
-            fraudCase.provider_id ??
-            "Not linked",
+            linkedProvider?.provider_code ??
+            (fraudCase.provider_id
+              ? "Provider record unavailable"
+              : "No provider linked"),
           providerName:
-            fraudCase.provider_id
-              ? "Linked Provider"
-              : "Not linked",
+            linkedProvider?.provider_name ??
+            (fraudCase.provider_id
+              ? "Provider record unavailable"
+              : "No provider linked"),
         },
         member: {
           memberId:
-            fraudCase.member_id ??
-            "Not linked",
-          memberName:
-            fraudCase.member_id
-              ? "Linked Member"
-              : "Not linked",
+            linkedMember?.member_number ??
+            (fraudCase.member_id
+              ? "Member record unavailable"
+              : "No member linked"),
+          memberName,
         },
       };
     });
-  }, [fraudCases]);
+  }, [
+    claims,
+    fraudCases,
+    members,
+    providers,
+  ]);
 
   const metrics = useMemo(() => {
     const activeInvestigations =

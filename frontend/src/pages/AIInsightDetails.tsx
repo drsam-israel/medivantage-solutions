@@ -583,30 +583,155 @@ export default function AIInsightDetails() {
           return;
         }
 
+        const normalizeText = (value: string | null | undefined) =>
+          (value ?? "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+
+        const normalizeReference = (
+          value: string | null | undefined,
+        ) =>
+          (value ?? "")
+            .trim()
+            .toUpperCase()
+            .replace(/[^A-Z0-9]/g, "");
+
+        const numericSuffix = (
+          value: string | null | undefined,
+        ) => {
+          const match = (value ?? "").match(/(\d+)\D*$/);
+          return match ? Number(match[1]) : null;
+        };
+
         const supportingReferences = new Set(
-          insight.supportingEvidence.map(
-            (evidence) => evidence.referenceId,
-          ),
+          insight.supportingEvidence
+            .map((evidence) =>
+              normalizeReference(evidence.referenceId),
+            )
+            .filter(Boolean),
         );
 
-        const matchedRecord =
-          records.find(
-            (record) =>
-              record.id === decodedInsightId ||
-              record.insight_number === decodedInsightId,
-          ) ??
-          records.find(
-            (record) =>
-              record.title.trim().toLowerCase() ===
-              insight.title.trim().toLowerCase(),
-          ) ??
-          records.find(
-            (record) =>
-              Boolean(record.source_reference) &&
+        const decodedReference =
+          normalizeReference(decodedInsightId);
+
+        const demoReference =
+          normalizeReference(insight.insightId);
+
+        const demoNumericSuffix =
+          numericSuffix(insight.insightId) ??
+          numericSuffix(decodedInsightId);
+
+        const normalizedDemoTitle =
+          normalizeText(insight.title);
+
+        const demoTitleTokens = new Set(
+          normalizedDemoTitle
+            .split(" ")
+            .filter((token) => token.length >= 4),
+        );
+
+        const titleOverlapScore = (
+          recordTitle: string,
+        ) => {
+          const recordTokens = new Set(
+            normalizeText(recordTitle)
+              .split(" ")
+              .filter((token) => token.length >= 4),
+          );
+
+          if (
+            demoTitleTokens.size === 0 ||
+            recordTokens.size === 0
+          ) {
+            return 0;
+          }
+
+          let shared = 0;
+
+          demoTitleTokens.forEach((token) => {
+            if (recordTokens.has(token)) {
+              shared += 1;
+            }
+          });
+
+          return shared / Math.max(
+            demoTitleTokens.size,
+            recordTokens.size,
+          );
+        };
+
+        const exactReferenceMatch =
+          records.find((record) => {
+            const backendId =
+              normalizeReference(record.id);
+
+            const backendInsightNumber =
+              normalizeReference(
+                record.insight_number,
+              );
+
+            return (
+              backendId === decodedReference ||
+              backendInsightNumber ===
+                decodedReference ||
+              backendInsightNumber ===
+                demoReference
+            );
+          });
+
+        const supportingReferenceMatch =
+          records.find((record) => {
+            const sourceReference =
+              normalizeReference(
+                record.source_reference,
+              );
+
+            return (
+              Boolean(sourceReference) &&
               supportingReferences.has(
-                record.source_reference as string,
-              ),
-          ) ??
+                sourceReference,
+              )
+            );
+          });
+
+        const numericSuffixMatch =
+          demoNumericSuffix === null
+            ? undefined
+            : records.find(
+                (record) =>
+                  numericSuffix(
+                    record.insight_number,
+                  ) === demoNumericSuffix,
+              );
+
+        const exactTitleMatch =
+          records.find(
+            (record) =>
+              normalizeText(record.title) ===
+              normalizedDemoTitle,
+          );
+
+        const fuzzyTitleMatch = records
+          .map((record) => ({
+            record,
+            score: titleOverlapScore(
+              record.title,
+            ),
+          }))
+          .filter(({ score }) => score >= 0.5)
+          .sort(
+            (a, b) => b.score - a.score,
+          )[0]?.record;
+
+        const matchedRecord =
+          exactReferenceMatch ??
+          supportingReferenceMatch ??
+          numericSuffixMatch ??
+          exactTitleMatch ??
+          fuzzyTitleMatch ??
           null;
 
         setLiveInsight(matchedRecord);
@@ -648,7 +773,7 @@ export default function AIInsightDetails() {
   async function handleApproveRecommendation() {
     if (!liveInsight) {
       setActionError(
-        "This demo insight is not yet linked to a live backend AI Insight record.",
+        "No matching live backend AI Insight record was found for this screen.",
       );
       return;
     }
@@ -709,7 +834,7 @@ export default function AIInsightDetails() {
   async function handleAssignHumanReview() {
     if (!liveInsight) {
       setActionError(
-        "This screen is not linked to a live backend AI Insight record.",
+        "No matching live backend AI Insight record was found for this screen.",
       );
       return;
     }
@@ -2573,7 +2698,7 @@ export default function AIInsightDetails() {
                     label={
                       liveInsight
                         ? liveInsight.insight_number
-                        : "Not linked"
+                        : "Backend record unavailable"
                     }
                     color={
                       liveInsight
@@ -2597,7 +2722,7 @@ export default function AIInsightDetails() {
 
                   if (!liveInsight) {
                     setActionError(
-                      "No live backend AI Insight record is linked to this screen.",
+                      "No matching live backend AI Insight record was found for this screen.",
                     );
                     return;
                   }
@@ -2629,7 +2754,7 @@ export default function AIInsightDetails() {
 
                   if (!liveInsight) {
                     setActionError(
-                      "No live backend AI Insight record is linked to this screen.",
+                      "No matching live backend AI Insight record was found for this screen.",
                     );
                     return;
                   }
