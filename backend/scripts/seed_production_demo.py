@@ -983,24 +983,7 @@ def seed_ai_insights(db: Session) -> list[AIInsight]:
             "HIGH",
             90.0,
         ),
-        (
-            "AI-INS-2026-009",
-            "Claims denial rate is increasing in outpatient imaging",
-            "CLAIMS_DENIAL_TREND",
-            "CLAIMS",
-            "OUTPATIENT-IMAGING-2026-08",
-            "HIGH",
-            87.0,
-        ),
-        (
-            "AI-INS-2026-010",
-            "Operational bottleneck predicted in claims review team",
-            "OPERATIONS_CAPACITY_RISK",
-            "CLAIMS",
-            "CLAIMS-REVIEW-TEAM-2026-08",
-            "MEDIUM",
-            85.0,
-        ),
+
     ]
 
     insights: list[AIInsight] = []
